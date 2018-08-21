@@ -54,4 +54,10 @@ void powertrace_sniff(powertrace_onoff_t onoff);
 
 void powertrace_print(char *str);
 
+long double get_battery_charge();//get the remaining energy in microAh
+
+double get_max_charge();
+
+long double get_residual_charge_percentage();
+
 #endif /* POWERTRACE_H */

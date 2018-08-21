@@ -124,11 +124,22 @@ struct energy_states{
 	double rx;
 }; 
 
+#define Skymote// Set the mote you are using here
+#ifdef Wismote
 // Intiate the struct with the eletrical current values in microA 
 // for the following states: active, low power CPU, Tx and Rx.
 // Current values for Wismote (microA)
 struct energy_states i_energyStt = {0.001200*1000000, 0.000090*1000000, 0.0336*1000000, 0.0185*1000000};
+#endif
 
+#ifdef Skymote
+// Intiate the struct with the eletrical current values in microA 
+// for the following states: active, low power CPU, Tx and Rx.
+// Current values for Skymote (microA)
+struct energy_states i_energyStt = {0.0018*1000000, 0.000051*1000000, 0.0195*1000000, 0.0218*1000000};
+#endif
+
+//https://github.com/KineticBattery/Powertrace
 //###############################################################################################
 //###############################################################################################
 //###############################################################################################
@@ -169,7 +180,9 @@ powertrace_print(char *str)
   listen = all_listen - last_listen;
   idle_transmit = compower_idle_activity.transmit - last_idle_transmit;
   idle_listen = compower_idle_activity.listen - last_idle_listen;
-
+  printf("Power CPU= %lu LPM= %lu  TX = %lu RX = %lu IDLE_TX= %lu IDLE_RX= %lu \n", cpu,lpm,transmit,listen,idle_transmit, idle_listen);
+  printf("Total Energy: %lu mJ \n", (unsigned long)(cpu*1.8 + listen*21.8 + transmit*19.5)*3/32768);
+  printf("Total CPU: %lu mJ \n",(unsigned long)(cpu*1.8*3)/32768);
   last_cpu = energest_type_time(ENERGEST_TYPE_CPU);
   last_lpm = energest_type_time(ENERGEST_TYPE_LPM);
   last_transmit = energest_type_time(ENERGEST_TYPE_TRANSMIT);
@@ -531,6 +544,7 @@ void update_battery(){
   //-------- Set the time spent in every state -----------------
   powertrace_print("");// In this fuction time in state is updated
   time_each_stt[0] = stats_com.cpu;
+  //printf("the cpu energest is %lu", time_each_stt[0]);
   time_each_stt[1] = stats_com.lpm;
   time_each_stt[2] = stats_com.transmit + stats_com.idle_transmit;
   time_each_stt[3] = stats_com.listen + stats_com.idle_listen;
@@ -572,18 +586,23 @@ void update_battery(){
 	printf("KIBAM Battery: Bound charge at next time interval is %lu (microAh) \n",(unsigned long) (batt.q2_0));
 	printf("KIBAM Battery: Energy Total consumption (microA); %lu;  \n",(unsigned long) (total_consumption));
 	printf("KIBAM Battery: Energy Periodic consumption (microA); %d;  \n",(int) (periodic_consumption));
-	//printf("Energy: CPU ticks %lu, LPM %lu, Tx %lu, Rx %lu \n", stats_com.cpu, stats_com.lpm, stats_com.transmit, stats_com.listen);
+	printf("Energy: CPU ticks %lu, LPM %lu, Tx %lu, Rx %lu \n", stats_com.cpu, stats_com.lpm, stats_com.transmit, stats_com.listen);
 	printf("-------------------------------------------\n");
 
   
 }
 
-long double get_battery_charge(){
+long double get_battery_charge(){//add to h file
     return batt.q1_0;	
 }
 
-double get_max_charge(){
+double get_max_charge(){   //add to h file
     return batt.qmax;	
+}
+
+long double get_residual_charge_percentage() {
+
+    return ((batt.q1_0 * 100)/batt.qmax);
 }
 
 //###############################################################################################
